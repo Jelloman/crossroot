@@ -1,0 +1,178 @@
+_templates_suffix: .jinja
+
+_subdirectory: template
+
+_message_after_copy: |
+  crossroot repo created.
+
+  Next steps:
+    1. Read README.md
+    2. Run ./scripts/bootstrap.sh
+    3. Review docs/platforms.md
+    4. Review generated agent docs
+
+project_name:
+  type: str
+  help: Human-readable project name.
+  default: ""
+
+repo_slug:
+  type: str
+  help: Repository slug, used in folder names and CI metadata.
+  default: "{{ project_name | lower | replace(' ', '-') | replace('_', '-') }}"
+
+project_description:
+  type: str
+  help: Short project description.
+  default: A crossroot-powered multi-language repository.
+
+owner_name:
+  type: str
+  help: Primary owner or organization name.
+  default: ""
+
+github_owner:
+  type: str
+  help: GitHub user or organization.
+  default: ""
+
+license_name:
+  type: str
+  help: License for the repository.
+  choices:
+    - MIT
+    - Apache-2.0
+    - Proprietary
+  default: MIT
+
+include_python:
+  type: bool
+  help: Include the Python module and Python control-plane defaults?
+  default: true
+
+include_typescript:
+  type: bool
+  help: Include the TypeScript module?
+  default: false
+
+include_java:
+  type: bool
+  help: Include the Java module?
+  default: false
+
+python_mode:
+  type: str
+  help: Python project structure.
+  choices:
+    - single-app
+    - workspace
+    - none
+  default: workspace
+  when: "{{ include_python }}"
+
+python_version:
+  type: str
+  help: Default Python version.
+  choices:
+    - "3.14"
+    - "3.13"
+    - "3.12"
+    - "3.11"
+  default: "3.13"
+  when: "{{ include_python }}"
+
+python_default_app_name:
+  type: str
+  help: Initial Python app/package name.
+  default: "{{ repo_slug | replace('-', '_') }}"
+  when: "{{ include_python and python_mode != 'none' }}"
+
+include_basedpyright:
+  type: bool
+  help: Enable BasedPyright config by default?
+  default: true
+  when: "{{ include_python }}"
+
+include_pytest:
+  type: bool
+  help: Include pytest configuration?
+  default: true
+  when: "{{ include_python }}"
+
+typescript_package_manager:
+  type: str
+  help: TypeScript package manager.
+  choices:
+    - pnpm
+    - npm
+    - bun
+  default: pnpm
+  when: "{{ include_typescript }}"
+
+typescript_framework:
+  type: str
+  help: Initial TypeScript app style.
+  choices:
+    - none
+    - library
+    - node-service
+    - nextjs-app
+  default: nextjs-app
+  when: "{{ include_typescript }}"
+
+java_build_tool:
+  type: str
+  help: Java build tool.
+  choices:
+    - gradle
+    - maven
+    - none
+  default: gradle
+  when: "{{ include_java }}"
+
+java_project_kind:
+  type: str
+  help: Initial Java project kind.
+  choices:
+    - library
+    - application
+  default: application
+  when: "{{ include_java }}"
+
+include_agent_docs:
+  type: bool
+  help: Generate CLAUDE.md, AGENTS.md, and Cursor rules from a canonical source?
+  default: true
+
+include_github_actions:
+  type: bool
+  help: Include GitHub Actions CI for supported platforms?
+  default: true
+
+include_doctor_script:
+  type: bool
+  help: Include doctor diagnostics command?
+  default: true
+
+include_update_script:
+  type: bool
+  help: Include a template update wrapper script?
+  default: true
+
+root_layout_style:
+  type: str
+  help: Root layout style.
+  choices:
+    - minimal-control-plane
+    - expanded-control-plane
+  default: minimal-control-plane
+
+create_example_apps:
+  type: bool
+  help: Generate sample language subprojects for included modules?
+  default: false
+
+copyright_year:
+  type: int
+  default: 2026
+  when: false
