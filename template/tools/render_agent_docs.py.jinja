@@ -1,1 +1,91 @@
-# TODO: render_agent_docs.py.jinja — render docs/agent-src/ → CLAUDE.md, AGENTS.md, .cursor/rules/
+"""Regenerate CLAUDE.md, AGENTS.md, and .cursor/rules/ from docs/agent-src/."""
+
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).parent.parent
+AGENT_SRC = REPO_ROOT / "docs" / "agent-src"
+
+SECTIONS = [
+    "overview.md",
+    "coding-standards.md",
+    "workflows.md",
+    "platform-rules.md",
+]
+
+_GENERATED_HEADER = (
+    "<!-- Auto-generated from docs/agent-src/. "
+    "Edit those files and run `croot gen-docs`. -->\n\n"
+)
+
+_CURSOR_FRONT_MATTER = {
+    "project-overview.mdc": {
+        "source": "overview.md",
+        "description": "Project overview, structure, and root commands",
+        "alwaysApply": "true",
+    },
+    "workflows.mdc": {
+        "source": "workflows.md",
+        "description": "Development workflows and common commands",
+        "alwaysApply": "false",
+    },
+    "platform-rules.mdc": {
+        "source": "platform-rules.md",
+        "description": "Cross-platform rules for Windows, macOS, and Linux",
+        "alwaysApply": "true",
+    },
+}
+
+
+def assemble_sections() -> str:
+    parts: list[str] = []
+    for name in SECTIONS:
+        path = AGENT_SRC / name
+        if path.exists():
+            parts.append(path.read_text(encoding="utf-8").strip())
+    return "\n\n---\n\n".join(parts)
+
+
+def write_claude_md(content: str) -> None:
+    out = REPO_ROOT / "CLAUDE.md"
+    out.write_text(_GENERATED_HEADER + content + "\n", encoding="utf-8")
+    print(f"  wrote {out.relative_to(REPO_ROOT)}")
+
+
+def write_agents_md(content: str) -> None:
+    out = REPO_ROOT / "AGENTS.md"
+    out.write_text(_GENERATED_HEADER + content + "\n", encoding="utf-8")
+    print(f"  wrote {out.relative_to(REPO_ROOT)}")
+
+
+def write_cursor_rules() -> None:
+    rules_dir = REPO_ROOT / ".cursor" / "rules"
+    rules_dir.mkdir(parents=True, exist_ok=True)
+    for rule_file, meta in _CURSOR_FRONT_MATTER.items():
+        src = AGENT_SRC / meta["source"]
+        if not src.exists():
+            continue
+        front_matter = (
+            f"---\n"
+            f"description: {meta['description']}\n"
+            f"alwaysApply: {meta['alwaysApply']}\n"
+            f"---\n\n"
+        )
+        out = rules_dir / rule_file
+        out.write_text(front_matter + src.read_text(encoding="utf-8").strip() + "\n", encoding="utf-8")
+        print(f"  wrote {out.relative_to(REPO_ROOT)}")
+
+
+def main() -> None:
+    if not AGENT_SRC.exists():
+        print(f"Error: {AGENT_SRC} not found.")
+        raise SystemExit(1)
+
+    content = assemble_sections()
+    write_claude_md(content)
+    write_agents_md(content)
+    write_cursor_rules()
+    print("Done.")
+
+
+if __name__ == "__main__":
+    main()

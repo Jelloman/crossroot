@@ -1,1 +1,43 @@
-{# TODO: charter.md.jinja — project charter: purpose, goals, non-goals, language module inventory #}
+# {{ project_name }} — Charter
+
+## Purpose
+
+{{ project_description }}
+
+## Goals
+
+- TODO: list specific goals
+
+## Non-Goals
+
+- TODO: list explicit non-goals
+
+## Language Modules
+{% if include_python %}
+### Python
+
+{{ python_mode }} mode, Python {{ python_version }}.
+{% endif %}
+{% if include_typescript %}
+### TypeScript
+
+Package manager: {{ typescript_package_manager }}.
+Framework: {{ typescript_framework }}.
+{% endif %}
+{% if include_java %}
+### Java
+
+Build tool: {{ java_build_tool }}.
+Project kind: {{ java_project_kind }}.
+{% endif %}
+
+## Tooling
+
+| Tool | Purpose |
+|------|---------|
+| uv | Python package management |
+| nox | Python task automation |
+| ruff | Python linting and formatting |
+{% if include_basedpyright %}| basedpyright | Python type checking |
+{% endif %}{% if include_pytest %}| pytest | Python testing |
+{% endif %}| copier | Template creation and updates |

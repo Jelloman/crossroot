@@ -1,3 +1,82 @@
-{# TODO: doctor.sh.jinja — validate OS, shell, tool versions, editor config; print colored status table #}
 #!/usr/bin/env bash
 set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+if [[ -t 1 ]]; then
+    OK='\033[0;32m✓\033[0m'; FAIL='\033[0;31m✗\033[0m'; WARN='\033[1;33m?\033[0m'
+else
+    OK='OK'; FAIL='FAIL'; WARN='WARN'
+fi
+
+check_tool() {
+    local label="$1" cmd="${2:-$1}"
+    if command -v "$cmd" &>/dev/null; then
+        local ver; ver="$("$cmd" --version 2>&1 | head -1 | sed 's/^[^0-9]*//')"
+        printf "  %b  %-22s %s\n" "$OK" "$label" "$ver"
+    else
+        printf "  %b  %-22s NOT FOUND\n" "$FAIL" "$label"
+    fi
+}
+
+check_file() {
+    local label="$1" path="$2"
+    if [[ -f "$path" || -d "$path" ]]; then
+        printf "  %b  %-22s %s\n" "$OK" "$label" "$path"
+    else
+        printf "  %b  %-22s missing: %s\n" "$WARN" "$label" "$path"
+    fi
+}
+
+detect_os() {
+    case "$(uname -s)" in
+        Linux*)              echo "Linux" ;;
+        Darwin*)             echo "macOS" ;;
+        MINGW*|MSYS*|CYGWIN*) echo "Windows (Git Bash)" ;;
+        *)                   echo "Unknown ($(uname -s))" ;;
+    esac
+}
+
+echo ""
+echo "══════════════════════════════════════════"
+echo "  {{ project_name }} — crossroot doctor"
+echo "══════════════════════════════════════════"
+echo ""
+echo "  OS:      $(detect_os)"
+echo "  Shell:   ${SHELL:-unknown}"
+echo "  Repo:    $REPO_ROOT"
+echo ""
+
+echo "Required tools:"
+check_tool "git"
+check_tool "uv"
+check_tool "bash"
+{% if include_python %}
+echo ""
+echo "Python tools (via uv run):"
+check_tool "python" "python"
+check_tool "ruff" "uv run ruff"
+{% if include_basedpyright %}check_tool "basedpyright" "uv run basedpyright"{% endif %}
+{% if include_pytest %}check_tool "pytest" "uv run pytest"{% endif %}
+check_tool "nox" "uv run nox"
+{% endif %}
+{% if include_typescript %}
+echo ""
+echo "TypeScript tools:"
+check_tool "{{ typescript_package_manager }}"
+check_tool "node"
+{% endif %}
+{% if include_java %}
+echo ""
+echo "Java tools:"
+check_tool "java"
+{% if java_build_tool == "gradle" %}check_tool "gradlew" "java/gradlew"{% endif %}
+{% endif %}
+echo ""
+echo "Repo files:"
+check_file "pyproject.toml" "pyproject.toml"
+check_file "uv.lock" "uv.lock"
+check_file ".copier-answers.yml" ".copier-answers.yml"
+check_file "scripts/croot" "scripts/croot"
+echo ""

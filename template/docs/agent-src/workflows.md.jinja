@@ -1,1 +1,99 @@
-{# TODO: workflows.md.jinja — canonical agent-src: dev workflow bootstrap → check → update cycle #}
+# Development Workflows
+
+## First-Time Setup
+
+```bash
+git clone <repo-url>
+cd {{ repo_slug }}
+bash scripts/bootstrap.sh
+# Follow the printed instructions to add scripts/ to your PATH.
+```
+
+After setup, `croot` is available as a command from anywhere in the repo.
+
+## Daily Development Loop
+
+```bash
+# Before committing — run all checks
+croot check
+# or:
+uv run nox -s check
+```
+{% if include_python %}
+
+## Python
+{% if python_mode == "workspace" %}
+```bash
+# Add a dependency to a specific workspace package
+cd python/apps/{{ python_default_app_name }}
+uv add <package>
+
+# Add a shared dev dependency at the root
+uv add --dev <package>
+
+# Run a specific app
+uv run -m <module>
+```
+{% elif python_mode == "single-app" %}
+```bash
+# Add a dependency
+uv add <package>
+
+# Add a dev dependency
+uv add --dev <package>
+
+# Run the app
+uv run -m {{ python_default_app_name | replace('-', '_') }}
+```
+{% endif %}
+{% endif %}
+{% if include_typescript %}
+
+## TypeScript
+
+```bash
+cd typescript
+{{ typescript_package_manager }} install     # install deps
+{{ typescript_package_manager }} run build   # build
+{{ typescript_package_manager }} run dev     # start dev server (if applicable)
+```
+{% endif %}
+{% if include_java %}
+
+## Java
+
+```bash
+cd java
+./gradlew build       # compile
+./gradlew test        # test
+./gradlew run         # run (if applicable)
+```
+{% endif %}
+
+## Template Updates
+
+```bash
+croot update
+# Review every changed file. Resolve conflicts with your custom changes.
+# Commit the result.
+```
+
+Files you can freely customize without worrying about template conflicts:
+- `docs/agent-src/` — your project's agent instructions
+- `python/`, `typescript/`, `java/` application code
+- `docs/` project documentation
+
+Files managed by the crossroot template (review changes carefully):
+- `pyproject.toml`, `noxfile.py`
+- `scripts/` shell scripts
+- `.github/workflows/`
+
+## Regenerating Agent Docs
+
+After editing anything in `docs/agent-src/`:
+
+```bash
+croot gen-docs
+git add CLAUDE.md AGENTS.md .cursor/rules/
+git commit -m "chore: regenerate agent docs"
+```

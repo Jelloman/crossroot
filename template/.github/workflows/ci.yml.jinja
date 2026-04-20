@@ -1,1 +1,53 @@
-{# TODO: ci.yml.jinja — CI matrix: ubuntu-latest, macos-latest, windows-latest; checkout, install uv, uv sync, nox check #}
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  check:
+    name: Check (${{ "{{" }} matrix.os {{ "}}" }})
+    runs-on: ${{ "{{" }} matrix.os {{ "}}" }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python {{ python_version }}
+        run: uv python install {{ python_version }}
+
+      - name: Install dependencies
+        run: uv sync
+{% if include_typescript %}
+
+      - name: Set up Node / {{ typescript_package_manager }}
+        uses: {% if typescript_package_manager == "pnpm" %}pnpm/action-setup@v4{% elif typescript_package_manager == "bun" %}oven-sh/setup-bun@v2{% else %}actions/setup-node@v4{% endif %}
+
+      - name: Install TypeScript dependencies
+        working-directory: typescript
+        run: {{ typescript_package_manager }} install
+{% endif %}
+
+      - name: Run checks
+        run: uv run nox -s check
+{% if include_typescript %}
+
+      - name: TypeScript build check
+        working-directory: typescript
+        run: {{ typescript_package_manager }} run build
+{% endif %}
+{% if include_java and java_build_tool == "gradle" %}
+
+      - name: Java build and test
+        working-directory: java
+        run: ./gradlew build
+{% endif %}

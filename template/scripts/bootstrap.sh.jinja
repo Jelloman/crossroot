@@ -1,3 +1,76 @@
-{# TODO: bootstrap.sh.jinja — check prerequisites (uv, git, node/java if enabled), run uv sync, optional per-module bootstrap #}
 #!/usr/bin/env bash
 set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+# ── colours ──────────────────────────────────────────────────────────────────
+if [[ -t 1 ]]; then
+    RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BOLD='\033[1m'; NC='\033[0m'
+else
+    RED=''; GREEN=''; YELLOW=''; BOLD=''; NC=''
+fi
+
+info()    { echo -e "${GREEN}[bootstrap]${NC} $*"; }
+warn()    { echo -e "${YELLOW}[bootstrap]${NC} $*"; }
+error()   { echo -e "${RED}[bootstrap]${NC} $*" >&2; }
+require() {
+    if ! command -v "$1" &>/dev/null; then
+        error "Required tool not found: ${BOLD}$1${NC}"
+        error "See docs/platforms.md for installation instructions."
+        exit 1
+    fi
+}
+
+# ── prerequisites ─────────────────────────────────────────────────────────────
+info "Checking prerequisites..."
+require git
+require uv
+{% if include_typescript %}
+require {{ typescript_package_manager }}
+{% endif %}
+{% if include_java and java_build_tool != "none" %}
+require java
+{% endif %}
+
+# ── Python / uv sync ──────────────────────────────────────────────────────────
+info "Syncing Python dependencies (uv sync)..."
+uv sync
+{% if include_typescript %}
+
+# ── TypeScript ────────────────────────────────────────────────────────────────
+if [[ -d typescript ]]; then
+    info "Installing TypeScript dependencies ({{ typescript_package_manager }} install)..."
+    cd typescript && {{ typescript_package_manager }} install && cd ..
+fi
+{% endif %}
+{% if include_java and java_build_tool == "gradle" %}
+
+# ── Java / Gradle ─────────────────────────────────────────────────────────────
+if [[ -f java/gradlew ]]; then
+    info "Checking Gradle wrapper..."
+    java/gradlew --version --quiet
+fi
+{% endif %}
+
+# ── PATH advisory ─────────────────────────────────────────────────────────────
+SCRIPTS_ABS="$REPO_ROOT/scripts"
+if ! echo "$PATH" | tr ':' '\n' | grep -qxF "$SCRIPTS_ABS"; then
+    warn ""
+    warn "${BOLD}Action required:${NC} add 'croot' to your PATH."
+    warn ""
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            warn "  Append to ~/.bash_profile:"
+            warn "    export PATH=\"\$PATH:$SCRIPTS_ABS\""
+            ;;
+        *)
+            warn "  Append to ~/.bashrc (or ~/.zshrc):"
+            warn "    export PATH=\"\$PATH:$SCRIPTS_ABS\""
+            ;;
+    esac
+    warn ""
+fi
+
+info "Bootstrap complete."
+info "Run ${BOLD}croot check${NC} to validate your setup."

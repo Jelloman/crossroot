@@ -1,1 +1,25 @@
-{# TODO: validate-template.yml.jinja — CI: run copier copy with test variables, then bootstrap and check the generated repo #}
+name: Validate Template Update
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  validate-update:
+    name: Verify crossroot template update compatibility
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install copier
+        run: uv tool install copier
+
+      - name: Check template update (dry run)
+        run: uvx copier update --defaults --overwrite --skip-if-exists

@@ -1,1 +1,74 @@
-{# TODO: overview.md.jinja — canonical agent-src: repo purpose, language modules, root commands; rendered into CLAUDE.md/AGENTS.md #}
+# {{ project_name }} — Overview
+
+{{ project_description }}
+
+## Repository Structure
+
+This repository uses a **crossroot** control plane{% if include_python %} with Python as the root orchestration layer{% endif %}.
+Language islands: {% if include_python %}Python{% endif %}{% if include_typescript %}, TypeScript{% endif %}{% if include_java %}, Java{% endif %}.
+
+```
+{{ repo_slug }}/
+├─ pyproject.toml        root control plane (deps, lint, type-check config)
+├─ noxfile.py            task automation
+├─ scripts/              repo orchestration scripts
+│  └─ croot              command dispatcher
+├─ docs/                 project documentation
+│  └─ agent-src/         canonical source for agent instruction files
+{% if include_python %}├─ python/               Python{% if python_mode == "workspace" %} workspace{% endif %} island
+{% endif %}{% if include_typescript %}├─ typescript/           TypeScript island
+{% endif %}{% if include_java %}├─ java/                 Java island
+{% endif %}├─ CLAUDE.md             generated — do not edit directly
+└─ AGENTS.md             generated — do not edit directly
+```
+
+> **Note:** `CLAUDE.md`, `AGENTS.md`, and `.cursor/rules/` are auto-generated from `docs/agent-src/`.
+> Edit the source files there and run `croot gen-docs`.
+
+## Root Commands
+
+`croot` is a dispatcher script in `scripts/`. Add `scripts/` to your `PATH` after running `croot bootstrap`.
+
+| Command | What it does |
+|---------|-------------|
+| `croot bootstrap` | Install prerequisites, sync deps, set up dev env |
+| `croot check` | Run all quality checks across enabled modules |
+{% if include_doctor_script %}| `croot doctor` | Diagnose environment: shell, OS, tools, config |
+{% endif %}{% if include_update_script %}| `croot update` | Pull latest crossroot template changes via copier |
+{% endif %}{% if include_agent_docs %}| `croot gen-docs` | Regenerate CLAUDE.md, AGENTS.md, .cursor/rules/ |
+{% endif %}
+
+Direct nox commands:
+
+| Command | What it does |
+|---------|-------------|
+| `uv run nox -s lint` | Lint and format check |
+{% if include_basedpyright %}| `uv run nox -s typecheck` | Type checking |
+{% endif %}{% if include_pytest %}| `uv run nox -s test` | Run tests |
+{% endif %}| `uv run nox -s check` | All of the above |
+{% if include_python %}
+
+## Python Island
+
+{% if python_mode == "workspace" %}
+Workspace mode: packages live in `python/apps/`, `python/libs/`, and `python/tools/`.
+The root `pyproject.toml` defines the `[tool.uv.workspace]` members.
+{% elif python_mode == "single-app" %}
+Single-app mode: one application in `python/{{ python_default_app_name }}/`.
+{% endif %}
+
+Run all Python commands via `uv run` — never activate a virtualenv manually.
+{% endif %}
+{% if include_typescript %}
+
+## TypeScript Island
+
+Package manager: `{{ typescript_package_manager }}`. TypeScript tooling stays inside `typescript/`.
+{% endif %}
+{% if include_java %}
+
+## Java Island
+
+Build tool: `{{ java_build_tool }}`. Run `./java/gradlew` (wrapper included).
+Java tooling stays inside `java/`.
+{% endif %}

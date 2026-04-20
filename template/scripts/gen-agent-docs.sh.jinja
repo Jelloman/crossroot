@@ -1,3 +1,10 @@
-{# TODO: gen-agent-docs.sh.jinja — run uv run python tools/render_agent_docs.py to regenerate CLAUDE.md, AGENTS.md, .cursor/rules/ #}
 #!/usr/bin/env bash
 set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+echo "[gen-agent-docs] Regenerating agent docs from docs/agent-src/..."
+uv run python tools/render_agent_docs.py
+echo "[gen-agent-docs] Commit the updated files:"
+echo "  git add CLAUDE.md AGENTS.md .cursor/rules/"

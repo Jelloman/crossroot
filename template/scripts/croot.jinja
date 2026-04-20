@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Find the crossroot repo root by walking up until .copier-answers.yml is found.
+find_repo_root() {
+    local dir="$PWD"
+    while [[ "$dir" != "/" && "$dir" != "." ]]; do
+        if [[ -f "$dir/.copier-answers.yml" ]]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    # Fallback: assume croot lives in <repo>/scripts/
+    echo "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+}
+
+REPO_ROOT="$(find_repo_root)"
+SCRIPTS="$REPO_ROOT/scripts"
+
+usage() {
+    cat <<EOF
+Usage: croot <command> [args...]
+
+Commands:
+  bootstrap    Install prerequisites and set up dev environment
+  check        Run all quality checks (lint, typecheck, test)
+{% if include_doctor_script %}  doctor       Diagnose environment issues
+{% endif %}{% if include_update_script %}  update       Update the crossroot template via copier
+{% endif %}{% if include_agent_docs %}  gen-docs     Regenerate CLAUDE.md, AGENTS.md, .cursor/rules/
+{% endif %}
+  help         Show this message
+
+Run from anywhere inside the repo.
+EOF
+}
+
+CMD="${1:-}"
+shift 2>/dev/null || true
+
+case "$CMD" in
+    bootstrap)  exec "$SCRIPTS/bootstrap.sh" "$@" ;;
+    check)      exec "$SCRIPTS/check.sh" "$@" ;;
+{% if include_doctor_script %}    doctor)     exec "$SCRIPTS/doctor.sh" "$@" ;;
+{% endif %}{% if include_update_script %}    update)     exec "$SCRIPTS/update-template.sh" "$@" ;;
+{% endif %}{% if include_agent_docs %}    gen-docs)   exec "$SCRIPTS/gen-agent-docs.sh" "$@" ;;
+{% endif %}    help|--help|-h|"")
+        usage
+        ;;
+    *)
+        echo "croot: unknown command '$CMD'" >&2
+        usage >&2
+        exit 1
+        ;;
+esac

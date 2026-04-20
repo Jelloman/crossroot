@@ -1,1 +1,65 @@
-{# TODO: pyproject.toml.jinja — root control-plane pyproject; uv workspace config, dev tooling deps (nox, ruff, basedpyright, pytest, copier), nox task entry points #}
+[project]
+name = "{{ repo_slug }}"
+version = "0.1.0"
+description = "{{ project_description }}"
+readme = "README.md"
+license = { text = "{{ license_name }}" }
+authors = [{ name = "{{ owner_name }}" }]
+requires-python = ">={{ python_version }}"
+
+{% if include_python and python_mode == "workspace" %}
+[tool.uv.workspace]
+members = [
+    "python/apps/*",
+    "python/libs/*",
+    "python/tools/*",
+]
+{% endif %}
+
+[dependency-groups]
+dev = [
+    "nox>=2024.4.15",
+    "ruff>=0.9.0",
+{% if include_basedpyright %}
+    "basedpyright>=1.18.0",
+{% endif %}
+{% if include_pytest %}
+    "pytest>=8.0",
+    "pytest-sugar>=1.0",
+{% endif %}
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "B", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+{% if include_basedpyright %}
+[tool.basedpyright]
+pythonVersion = "{{ python_version }}"
+typeCheckingMode = "standard"
+reportMissingTypeStubs = "warning"
+reportUnknownVariableType = "none"
+reportUnknownParameterType = "none"
+reportUnknownMemberType = "none"
+reportUnknownArgumentType = "none"
+{% endif %}
+
+{% if include_pytest %}
+[tool.pytest.ini_options]
+testpaths = [
+{% if python_mode == "workspace" %}
+    "python",
+{% elif python_mode == "single-app" %}
+    "python/{{ python_default_app_name }}/tests",
+{% else %}
+    ".",
+{% endif %}
+]
+addopts = ["-ra", "-q"]
+{% endif %}

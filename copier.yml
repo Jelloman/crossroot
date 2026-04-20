@@ -2,14 +2,41 @@ _templates_suffix: .jinja
 
 _subdirectory: template
 
+_exclude:
+  # Language module directories — only copy what's enabled
+  - "{% if not include_python or python_mode == 'none' %}python{% endif %}"
+  - "{% if not include_typescript %}typescript{% endif %}"
+  - "{% if not include_java %}java{% endif %}"
+  # Python workspace: exclude single-app root dir; single-app: exclude workspace subdirs
+  - "{% if include_python and python_mode == 'workspace' %}python/{{ python_default_app_name }}{% endif %}"
+  - "{% if include_python and python_mode != 'workspace' %}python/apps{% endif %}"
+  - "{% if include_python and python_mode != 'workspace' %}python/libs{% endif %}"
+  - "{% if include_python and python_mode != 'workspace' %}python/tools{% endif %}"
+  # Optional script exclusions
+  - "{% if not include_doctor_script %}scripts/doctor.sh{% endif %}"
+  - "{% if not include_update_script %}scripts/update-template.sh{% endif %}"
+  - "{% if not include_agent_docs %}scripts/gen-agent-docs.sh{% endif %}"
+  - "{% if not include_agent_docs %}tools{% endif %}"
+  - "{% if not include_agent_docs %}docs/agent-src{% endif %}"
+  - "{% if not include_github_actions %}.github{% endif %}"
+
+_tasks:
+  - "chmod +x scripts/croot"
+  - "chmod +x scripts/bootstrap.sh"
+  - "chmod +x scripts/check.sh"
+  - "{% if include_doctor_script %}chmod +x scripts/doctor.sh{% endif %}"
+  - "{% if include_update_script %}chmod +x scripts/update-template.sh{% endif %}"
+  - "{% if include_agent_docs %}chmod +x scripts/gen-agent-docs.sh{% endif %}"
+
 _message_after_copy: |
   crossroot repo created.
 
   Next steps:
     1. Read README.md
-    2. Run ./scripts/bootstrap.sh
-    3. Review docs/platforms.md
-    4. Review generated agent docs
+    2. Run ./scripts/bootstrap.sh  (then add scripts/ to your PATH)
+    3. Run: croot check
+    4. Review docs/platforms.md
+    {% if include_agent_docs %}5. Run: croot gen-docs  (to regenerate agent docs after customizing docs/agent-src/){% endif %}
 
 project_name:
   type: str
