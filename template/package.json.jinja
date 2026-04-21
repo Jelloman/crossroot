@@ -1,0 +1,53 @@
+{
+  "name": "{{ repo_slug }}",
+  "version": "0.1.0",
+  "private": true,
+{% if typescript_package_manager != "pnpm" %}
+  "workspaces": [
+    "typescript/apps/*",
+    "typescript/packages/*",
+    "typescript/tools/*"
+  ],
+{% endif %}
+  "scripts": {
+{% if typescript_package_manager == "pnpm" %}
+    "build":     "pnpm --recursive run build",
+    "test":      "pnpm --recursive run test",
+{% elif typescript_package_manager == "yarn" %}
+    "build":     "yarn workspaces foreach --all run build",
+    "test":      "yarn workspaces foreach --all run test",
+{% elif typescript_package_manager == "npm" %}
+    "build":     "npm --workspaces --if-present run build",
+    "test":      "npm --workspaces --if-present run test",
+{% elif typescript_package_manager == "bun" %}
+    "build":     "bun run --filter='*' build",
+    "test":      "bun run --filter='*' test",
+{% endif %}
+    "lint":      "eslint typescript/",
+    "format":    "prettier --check typescript/",
+    "typecheck": "tsc --noEmit",
+    "check":     "{{ typescript_package_manager }} run typecheck && {{ typescript_package_manager }} run lint && {{ typescript_package_manager }} run build && {{ typescript_package_manager }} run test"
+  },
+  "devDependencies": {
+    "@eslint/js":        "^{{ eslint_version }}.0.0",
+    "eslint":            "^{{ eslint_version }}.0.0",
+    "globals":           "^15.0.0",
+    "prettier":          "^3.0.0",
+    "typescript":        "^{{ typescript_version }}.0.0",
+{% if eslint_version == "10" %}
+    "typescript-eslint": "^9.0.0",
+{% else %}
+    "typescript-eslint": "^8.0.0",
+{% endif %}
+{% if typescript_test_runner == "vitest" %}
+    "vitest":            "^3.0.0"
+{% else %}
+    "jest":              "^30.0.0",
+    "@types/jest":       "^30.0.0",
+    "ts-jest":           "^29.0.0"
+{% endif %}
+  }{% if typescript_package_manager == "pnpm" %},
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }{% endif %}
+}

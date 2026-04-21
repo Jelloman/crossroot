@@ -1,0 +1,54 @@
+import nox
+
+nox.options.default_venv_backend = "none"
+
+
+@nox.session(name="lint")
+def lint(session: nox.Session) -> None:
+    """Lint and format check."""
+    session.run("uv", "run", "ruff", "check", ".", external=True)
+    session.run("uv", "run", "ruff", "format", "--check", ".", external=True)
+
+
+@nox.session(name="format")
+def fmt(session: nox.Session) -> None:
+    """Auto-format code."""
+    session.run("uv", "run", "ruff", "format", ".", external=True)
+    session.run("uv", "run", "ruff", "check", "--fix", ".", external=True)
+{%- if include_basedpyright %}
+
+
+@nox.session(name="typecheck")
+def typecheck(session: nox.Session) -> None:
+    """Run basedpyright type checking."""
+    session.run("uv", "run", "basedpyright", external=True)
+{%- endif %}
+{%- if include_pytest %}
+
+
+@nox.session(name="test")
+def test(session: nox.Session) -> None:
+    """Run tests."""
+    session.run("uv", "run", "pytest", *session.posargs, external=True)
+{%- endif %}
+
+
+@nox.session(name="check")
+def check(session: nox.Session) -> None:
+    """Run all quality checks: lint, typecheck, test."""
+    session.run("uv", "run", "ruff", "check", ".", external=True)
+    session.run("uv", "run", "ruff", "format", "--check", ".", external=True)
+{%- if include_basedpyright %}
+    session.run("uv", "run", "basedpyright", external=True)
+{%- endif %}
+{%- if include_pytest %}
+    session.run("uv", "run", "pytest", external=True)
+{%- endif %}
+{%- if include_agent_docs %}
+
+
+@nox.session(name="gen-agent-docs")
+def gen_agent_docs(session: nox.Session) -> None:
+    """Regenerate CLAUDE.md, AGENTS.md, and .cursor/rules/ from docs/agent-src/."""
+    session.run("bash", "scripts/gen-agent-docs.sh", external=True)
+{%- endif %}

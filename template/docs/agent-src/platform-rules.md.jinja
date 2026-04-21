@@ -1,0 +1,46 @@
+# Platform Rules
+
+crossroot supports **Windows (Git Bash)**, **macOS**, and **Linux** as first-class platforms.
+
+## Shell Baseline
+
+- All scripts use `#!/usr/bin/env bash` and `set -euo pipefail`.
+- **Git Bash is required on Windows.** Do not use PowerShell for repo operations.
+- `uv`, `nox`, and all tools are invoked identically on all platforms.
+- Use forward slashes in paths inside scripts and configs.
+
+## Windows (Git Bash)
+
+- Install [Git for Windows](https://git-scm.com/downloads) to get Git Bash.
+- Run `croot` and all `.sh` scripts in Git Bash.
+- Add `scripts/` to `PATH` in `~/.bash_profile` (not `~/.bashrc`):
+  ```bash
+  export PATH="$PATH:/d/src/{{ repo_slug }}/scripts"
+  ```
+- Avoid paths with spaces where possible; if unavoidable, quote them: `"path with spaces"`.
+- `uv` on Windows installs to `%LOCALAPPDATA%\uv\bin`; ensure that's in your system `PATH`.
+
+## macOS
+
+- Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Ensure `~/.local/bin` is in `PATH` (the uv installer advises this).
+- `croot` works in bash and zsh.
+
+## Linux
+
+- Install uv via the same installer: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- `croot` works in bash and zsh.
+
+## CI Matrix
+
+CI runs on `ubuntu-latest`, `macos-latest`, and `windows-latest` to catch platform-specific issues early. Always run `croot check` locally before pushing.
+
+## Cross-Platform Dos and Don'ts
+
+| Do | Don't |
+|----|-------|
+| `#!/usr/bin/env bash` | `#!/bin/bash` (not available on all systems) |
+| `uv run python` | `python3` or `python` directly (venv may not be active) |
+| Forward slashes in paths | Backslashes in scripts |
+| `$()` for command substitution | Backtick substitution |
+| `[[ ... ]]` for conditionals | `[ ... ]` for complex expressions |

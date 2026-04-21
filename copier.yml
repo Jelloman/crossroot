@@ -2,14 +2,54 @@ _templates_suffix: .jinja
 
 _subdirectory: template
 
+_exclude:
+  # Language module directories — only copy what's enabled
+  - "{% if not include_python or python_mode == 'none' %}python{% endif %}"
+  - "{% if not include_typescript %}typescript{% endif %}"
+  - "{% if not include_java %}java{% endif %}"
+  # Python workspace: exclude single-app root dir; single-app: exclude workspace subdirs
+  - "{% if include_python and python_mode == 'workspace' %}python/{{ python_default_app_name }}{% endif %}"
+  - "{% if include_python and python_mode != 'workspace' %}python/apps{% endif %}"
+  - "{% if include_python and python_mode != 'workspace' %}python/libs{% endif %}"
+  - "{% if include_python and python_mode != 'workspace' %}python/tools{% endif %}"
+  # TypeScript root-level files — only copy when TypeScript is enabled
+  - "{% if not include_typescript %}package.json{% endif %}"
+  - "{% if not include_typescript or typescript_package_manager != 'pnpm' %}pnpm-workspace.yaml{% endif %}"
+  - "{% if not include_typescript or typescript_package_manager != 'yarn' %}.yarnrc.yml{% endif %}"
+  - "{% if not include_typescript %}tsconfig.base.json{% endif %}"
+  - "{% if not include_typescript %}tsconfig.json{% endif %}"
+  - "{% if not include_typescript %}eslint.config.mjs{% endif %}"
+  - "{% if not include_typescript %}.prettierrc{% endif %}"
+  # TypeScript app exclusions — test runner config is mutually exclusive
+  - "{% if not include_typescript or typescript_framework == 'none' %}typescript/apps/web{% endif %}"
+  - "{% if not include_typescript or typescript_test_runner != 'vitest' %}typescript/apps/web/vitest.config.ts{% endif %}"
+  - "{% if not include_typescript or typescript_test_runner != 'jest' %}typescript/apps/web/jest.config.js{% endif %}"
+  # Optional script exclusions
+  - "{% if not include_doctor_script %}scripts/doctor.sh{% endif %}"
+  - "{% if not include_update_script %}scripts/update-template.sh{% endif %}"
+  - "{% if not include_agent_docs %}scripts/gen-agent-docs.sh{% endif %}"
+  - "{% if not include_agent_docs %}tools{% endif %}"
+  - "{% if not include_agent_docs %}docs/agent-src{% endif %}"
+  - "{% if not include_github_actions %}.github{% endif %}"
+
+_tasks:
+  - "chmod +x scripts/croot"
+  - "chmod +x scripts/bootstrap.sh"
+  - "chmod +x scripts/check.sh"
+  - "{% if include_doctor_script %}chmod +x scripts/doctor.sh{% endif %}"
+  - "{% if include_update_script %}chmod +x scripts/update-template.sh{% endif %}"
+  - "{% if include_agent_docs %}chmod +x scripts/gen-agent-docs.sh{% endif %}"
+  - "uvx ruff format noxfile.py tools/render_agent_docs.py --quiet"
+
 _message_after_copy: |
   crossroot repo created.
 
   Next steps:
     1. Read README.md
-    2. Run ./scripts/bootstrap.sh
-    3. Review docs/platforms.md
-    4. Review generated agent docs
+    2. Run ./scripts/bootstrap.sh  (then add scripts/ to your PATH)
+    3. Run: croot check
+    4. Review docs/platforms.md
+    {% if include_agent_docs %}5. Run: croot gen-docs  (to regenerate agent docs after customizing docs/agent-src/){% endif %}
 
 project_name:
   type: str
@@ -90,13 +130,13 @@ python_default_app_name:
 include_basedpyright:
   type: bool
   help: Enable BasedPyright config by default?
-  default: true
+  default: "{{ include_python }}"
   when: "{{ include_python }}"
 
 include_pytest:
   type: bool
   help: Include pytest configuration?
-  default: true
+  default: "{{ include_python }}"
   when: "{{ include_python }}"
 
 typescript_package_manager:
@@ -104,9 +144,37 @@ typescript_package_manager:
   help: TypeScript package manager.
   choices:
     - pnpm
+    - yarn
     - npm
     - bun
   default: pnpm
+  when: "{{ include_typescript }}"
+
+typescript_version:
+  type: str
+  help: TypeScript major version.
+  choices:
+    - "6"
+    - "5"
+  default: "5"
+  when: "{{ include_typescript }}"
+
+eslint_version:
+  type: str
+  help: ESLint major version.
+  choices:
+    - "10"
+    - "9"
+  default: "9"
+  when: "{{ include_typescript }}"
+
+typescript_test_runner:
+  type: str
+  help: TypeScript test runner.
+  choices:
+    - vitest
+    - jest
+  default: vitest
   when: "{{ include_typescript }}"
 
 typescript_framework:
@@ -158,14 +226,6 @@ include_update_script:
   type: bool
   help: Include a template update wrapper script?
   default: true
-
-root_layout_style:
-  type: str
-  help: Root layout style.
-  choices:
-    - minimal-control-plane
-    - expanded-control-plane
-  default: minimal-control-plane
 
 create_example_apps:
   type: bool

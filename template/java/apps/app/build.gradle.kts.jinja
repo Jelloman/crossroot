@@ -1,0 +1,13 @@
+{% if java_project_kind == "application" %}
+plugins {
+    application
+}
+
+application {
+    mainClass.set("App")
+}
+{% endif %}
+
+dependencies {
+    // Add application dependencies here
+}

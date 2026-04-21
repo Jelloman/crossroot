@@ -1,0 +1,49 @@
+# {{ project_name }}
+
+{{ project_description }}
+
+## Quick Start
+
+```bash
+git clone <repo-url>
+cd {{ repo_slug }}
+bash scripts/bootstrap.sh   # install prerequisites, sync deps, advise on PATH
+```
+
+Once `scripts/` is on your `PATH`:
+
+```bash
+croot check        # lint + typecheck + test
+croot doctor       # diagnose environment issues
+```
+
+## Language Modules
+
+| Module | Status |
+|--------|--------|
+{% if include_python %}| Python (`python/`) | enabled ({{ python_mode }} mode, Python {{ python_version }}) |
+{% endif %}{% if include_typescript %}| TypeScript (`typescript/`) | enabled ({{ typescript_package_manager }}) |
+{% endif %}{% if include_java %}| Java (`java/`) | enabled ({{ java_build_tool }}) |
+{% endif %}
+
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `croot bootstrap` | Install prerequisites and sync dependencies |
+| `croot check` | Run all quality checks |
+| `croot doctor` | Diagnose environment issues |
+{% if include_update_script %}| `croot update` | Pull latest crossroot template updates |
+{% endif %}{% if include_agent_docs %}| `croot gen-docs` | Regenerate CLAUDE.md, AGENTS.md, .cursor/rules/ |
+{% endif %}
+
+## Documentation
+
+- [`docs/charter.md`](docs/charter.md) — Project goals and scope
+- [`docs/development.md`](docs/development.md) — Developer workflows
+- [`docs/platforms.md`](docs/platforms.md) — Platform-specific notes
+
+## Template
+
+This repo was created with [crossroot](https://github.com/{{ github_owner }}/crossroot).
+Run `croot update` to pull the latest template changes.

@@ -1,0 +1,59 @@
+# Coding Standards
+{% if include_python %}
+## Python
+
+**Stack:** uv · ruff · {% if include_basedpyright %}basedpyright · {% endif %}{% if include_pytest %}pytest · {% endif %}nox
+
+- **Python version:** {{ python_version }}+
+- **Package management:** `uv`. Never use `pip install` directly.
+- **Running scripts/tools:** `uv run <command>`. Never activate a venv manually.
+- **Formatting:** ruff, 100-character line length.
+- **Lint rules:** E, F, UP, B, I. See `[tool.ruff.lint]` in `pyproject.toml`.
+{% if include_basedpyright %}
+- **Type checking:** basedpyright standard mode. All new code must have type annotations.
+  - Use PEP 604 union syntax: `T | None`, not `Optional[T]`.
+  - Use built-in generics: `list[T]`, `dict[K, V]`, not `List`, `Dict`.
+  - Type-ignore comments require a code: `# type: ignore[assignment]`.
+{% endif %}
+{% if include_pytest %}
+- **Tests:** pytest. Test files go in `tests/` adjacent to source.
+  - Test functions named `test_<what>_<condition>`.
+  - Prefer `assert` over unittest-style `assertEqual`.
+{% endif %}
+
+### Python Workflow
+
+```bash
+uv run nox -s check    # lint + typecheck + test
+uv run nox -s format   # auto-format
+uv run nox -s lint     # lint only
+uv add <package>       # add runtime dependency
+uv add --dev <package> # add dev dependency
+```
+{% endif %}
+{% if include_typescript %}
+
+## TypeScript
+
+- **Package manager:** `{{ typescript_package_manager }}`
+- Use `"strict": true` in `tsconfig.json`.
+- Prefer named exports over default exports.
+- Use `const` by default; `let` only when mutation is needed.
+- No `any` without a comment explaining why.
+- TypeScript tooling stays inside `typescript/` — do not mix with Python tooling.
+{% endif %}
+{% if include_java %}
+
+## Java
+
+- **Build tool:** `{{ java_build_tool }}`
+- Run `./java/gradlew` (repo-local wrapper) — never a system-installed Gradle.
+- Follow standard Java naming: `PascalCase` for classes, `camelCase` for methods.
+- Java tooling stays inside `java/` — do not mix with Python tooling.
+{% endif %}
+
+## Cross-Cutting
+
+- Commit messages: imperative mood, under 72 characters for the subject line.
+- No secrets in source code. Use environment variables or a secrets manager.
+- All `TODO` comments must reference an issue or include a clear explanation.

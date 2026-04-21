@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+cat <<'MSG'
+[update-template] Updating crossroot template via copier...
+
+  This applies upstream template changes to this repo.
+  Review every changed file before committing — especially:
+    • pyproject.toml, noxfile.py (control-plane)
+    • scripts/ (repo orchestration)
+    • .github/workflows/ (CI)
+
+  Files you own and should not conflict:
+    • docs/agent-src/    application-specific agent docs
+    • python/, typescript/, java/    application code
+
+MSG
+
+uvx copier update --trust

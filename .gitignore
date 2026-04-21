@@ -1,1 +1,5 @@
 doc/
+.claude/settings.local.json
+CLAUDE.md
+test/out/
+test/__pycache__/

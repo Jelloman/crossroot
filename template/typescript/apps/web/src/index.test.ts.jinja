@@ -1,0 +1,12 @@
+{% if typescript_test_runner == "vitest" %}
+import { describe, expect, it } from "vitest";
+{% else %}
+import { describe, expect, it } from "@jest/globals";
+{% endif %}
+import { greet } from "./index.js";
+
+describe("greet", () => {
+  it("returns a greeting", () => {
+    expect(greet("world")).toBe("Hello, world!");
+  });
+});

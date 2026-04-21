@@ -1,0 +1,51 @@
+# Platform Notes
+
+crossroot targets Windows (Git Bash), macOS, and Linux equally.
+
+## Windows
+
+### Requirements
+
+- **Git for Windows** (includes Git Bash): https://git-scm.com/downloads
+- **uv**: `winget install astral-sh.uv` or `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
+{% if include_typescript %}
+- **{{ typescript_package_manager }}**: see https://{% if typescript_package_manager == "pnpm" %}pnpm.io/installation{% elif typescript_package_manager == "bun" %}bun.sh{% else %}nodejs.org{% endif %}
+{% endif %}
+{% if include_java %}
+- **JDK 21+**: https://adoptium.net/
+{% endif %}
+
+### PATH Setup
+
+Run all scripts in **Git Bash** (not PowerShell or CMD). After `croot bootstrap`, add `scripts/` to your Git Bash PATH:
+
+```bash
+# Append to ~/.bash_profile (not ~/.bashrc on Windows):
+export PATH="$PATH:/d/src/{{ repo_slug }}/scripts"
+```
+
+Restart Git Bash or run `source ~/.bash_profile`.
+
+### Notes
+
+- Use forward slashes in paths inside scripts.
+- `uv` installs to `%LOCALAPPDATA%\uv\bin`; ensure that's on your system PATH for GUI tools.
+
+## macOS
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Ensure ~/.local/bin is in PATH (uv installer advises this)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+```
+
+## Linux
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Works with bash and zsh. Ensure `~/.local/bin` is in `PATH`.

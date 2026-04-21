@@ -1,0 +1,56 @@
+# Development Guide
+
+See also: `docs/agent-src/workflows.md` for a concise command reference.
+
+## Prerequisites
+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) — Python package manager
+- [git](https://git-scm.com/downloads)
+{% if include_typescript %}
+- [{{ typescript_package_manager }}](https://{% if typescript_package_manager == "pnpm" %}pnpm.io{% elif typescript_package_manager == "bun" %}bun.sh{% else %}nodejs.org{% endif %}) — TypeScript package manager
+{% endif %}
+{% if include_java %}
+- Java 21+ JDK
+{% endif %}
+
+See `docs/platforms.md` for platform-specific installation notes.
+
+## Setup
+
+```bash
+git clone <repo-url>
+cd {{ repo_slug }}
+bash scripts/bootstrap.sh
+```
+
+Then add `scripts/` to your `PATH` as instructed.
+
+## Quality Checks
+
+```bash
+croot check           # all checks: lint + typecheck + test
+uv run nox -s lint    # lint only
+{% if include_basedpyright %}uv run nox -s typecheck  # type check only
+{% endif %}{% if include_pytest %}uv run nox -s test    # tests only
+{% endif %}uv run nox -s format  # auto-format
+```
+
+## Dependency Management
+{% if include_python %}
+```bash
+uv add <package>          # add runtime dependency
+uv add --dev <package>    # add dev dependency
+uv remove <package>       # remove dependency
+uv sync                   # sync to lock file
+uv lock --upgrade         # upgrade all dependencies
+```
+{% endif %}
+
+## Template Updates
+
+```bash
+croot update
+# or: bash scripts/update-template.sh
+```
+
+Review every changed file carefully before committing.
