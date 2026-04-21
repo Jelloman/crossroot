@@ -1,0 +1,40 @@
+🎤 Human-readable project name.
+   test-crossroot
+🎤 Repository slug, used in folder names and CI metadata.
+   test-crossroot
+🎤 Short project description.
+   A crossroot-powered multi-language repository. TEST
+🎤 Primary owner or organization name.
+   Jelloman
+🎤 GitHub user or organization.
+   Jelloman
+🎤 License for the repository.
+   MIT
+🎤 Include the Python module and Python control-plane defaults?
+   Yes
+🎤 Include the TypeScript module?
+   No
+🎤 Include the Java module?
+   No
+🎤 Python project structure.
+   workspace
+🎤 Default Python version.
+   3.13
+🎤 Initial Python app/package name.
+   test_crossroot_py
+🎤 Enable BasedPyright config by default?
+   Yes
+🎤 Include pytest configuration?
+   Yes
+🎤 Generate CLAUDE.md, AGENTS.md, and Cursor rules from a canonical source?
+   Yes
+🎤 Include GitHub Actions CI for supported platforms?
+   Yes
+🎤 Include doctor diagnostics command?
+   Yes
+🎤 Include a template update wrapper script?
+   Yes
+🎤 Root layout style.
+   expanded-control-plane
+🎤 Generate sample language subprojects for included modules?
+   Yes
