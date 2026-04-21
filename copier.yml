@@ -12,6 +12,18 @@ _exclude:
   - "{% if include_python and python_mode != 'workspace' %}python/apps{% endif %}"
   - "{% if include_python and python_mode != 'workspace' %}python/libs{% endif %}"
   - "{% if include_python and python_mode != 'workspace' %}python/tools{% endif %}"
+  # TypeScript root-level files — only copy when TypeScript is enabled
+  - "{% if not include_typescript %}package.json{% endif %}"
+  - "{% if not include_typescript or typescript_package_manager != 'pnpm' %}pnpm-workspace.yaml{% endif %}"
+  - "{% if not include_typescript or typescript_package_manager != 'yarn' %}.yarnrc.yml{% endif %}"
+  - "{% if not include_typescript %}tsconfig.base.json{% endif %}"
+  - "{% if not include_typescript %}tsconfig.json{% endif %}"
+  - "{% if not include_typescript %}eslint.config.mjs{% endif %}"
+  - "{% if not include_typescript %}.prettierrc{% endif %}"
+  # TypeScript app exclusions — test runner config is mutually exclusive
+  - "{% if not include_typescript or typescript_framework == 'none' %}typescript/apps/web{% endif %}"
+  - "{% if not include_typescript or typescript_test_runner != 'vitest' %}typescript/apps/web/vitest.config.ts{% endif %}"
+  - "{% if not include_typescript or typescript_test_runner != 'jest' %}typescript/apps/web/jest.config.js{% endif %}"
   # Optional script exclusions
   - "{% if not include_doctor_script %}scripts/doctor.sh{% endif %}"
   - "{% if not include_update_script %}scripts/update-template.sh{% endif %}"
@@ -132,9 +144,37 @@ typescript_package_manager:
   help: TypeScript package manager.
   choices:
     - pnpm
+    - yarn
     - npm
     - bun
   default: pnpm
+  when: "{{ include_typescript }}"
+
+typescript_version:
+  type: str
+  help: TypeScript major version.
+  choices:
+    - "6"
+    - "5"
+  default: "5"
+  when: "{{ include_typescript }}"
+
+eslint_version:
+  type: str
+  help: ESLint major version.
+  choices:
+    - "10"
+    - "9"
+  default: "9"
+  when: "{{ include_typescript }}"
+
+typescript_test_runner:
+  type: str
+  help: TypeScript test runner.
+  choices:
+    - vitest
+    - jest
+  default: vitest
   when: "{{ include_typescript }}"
 
 typescript_framework:

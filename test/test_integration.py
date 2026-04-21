@@ -10,7 +10,9 @@ We intentionally run `nox -s check` rather than bare `nox` to avoid the
 """
 
 import logging
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 from conftest import BASH
@@ -23,9 +25,12 @@ log = logging.getLogger(__name__)
 # Helpers
 # ---------------------------------------------------------------------------
 
+_ENV = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}
+
+
 def _run(label: str, args: list[str], cwd: Path) -> None:
     log.info("$ %s", " ".join(args))
-    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True, env=_ENV)
     for line in result.stdout.splitlines():
         log.info("  %s", line)
     for line in result.stderr.splitlines():
@@ -47,6 +52,14 @@ def _nox_check(out: Path) -> None:
     _run("nox -s check", ["uv", "run", "nox", "-s", "check"], out)
 
 
+def _ts_check(out: Path, pm: str) -> None:
+    if sys.platform == "win32":
+        cmd = ["cmd", "/c", pm, "run", "check"]
+    else:
+        cmd = [pm, "run", "check"]
+    _run(f"{pm} run check", cmd, out)
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -61,6 +74,7 @@ def test_typescript_only_runs(generate) -> None:
     out = generate("run-ts", TYPESCRIPT_ONLY)
     _bootstrap(out)
     _nox_check(out)
+    _ts_check(out, TYPESCRIPT_ONLY["typescript_package_manager"])
 
 
 def test_java_only_runs(generate) -> None:
@@ -73,3 +87,4 @@ def test_polyglot_runs(generate) -> None:
     out = generate("run-polyglot", POLYGLOT)
     _bootstrap(out)
     _nox_check(out)
+    _ts_check(out, POLYGLOT["typescript_package_manager"])

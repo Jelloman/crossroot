@@ -50,6 +50,9 @@ TYPESCRIPT_ONLY: dict[str, str] = {
     "include_typescript": "true",
     "include_java": "false",
     "typescript_package_manager": "pnpm",
+    "typescript_version": "5",
+    "eslint_version": "9",
+    "typescript_test_runner": "vitest",
     "typescript_framework": "node-service",
     "include_agent_docs": "true",
     "include_github_actions": "true",
@@ -93,6 +96,9 @@ POLYGLOT: dict[str, str] = {
     "include_basedpyright": "true",
     "include_pytest": "true",
     "typescript_package_manager": "pnpm",
+    "typescript_version": "5",
+    "eslint_version": "9",
+    "typescript_test_runner": "vitest",
     "typescript_framework": "node-service",
     "java_build_tool": "gradle",
     "java_project_kind": "application",
@@ -196,16 +202,43 @@ def assert_python_module(out: Path, app_name: str) -> None:
         assert (out / rel).exists(), f"Missing Python file: {rel}"
 
 
-def assert_typescript_module(out: Path) -> None:
+def assert_typescript_module(out: Path, data: dict[str, str]) -> None:
     log.info("Checking TypeScript module...")
     ts_files = [
-        "typescript/apps/web/package.json",
-        "typescript/apps/web/tsconfig.json",
+        "package.json",
+        "tsconfig.base.json",
+        "tsconfig.json",
+        "eslint.config.mjs",
+        ".prettierrc",
         "typescript/packages/.gitkeep",
         "typescript/tools/.gitkeep",
     ]
     for rel in ts_files:
         assert (out / rel).exists(), f"Missing TypeScript file: {rel}"
+
+    pm = data.get("typescript_package_manager", "pnpm")
+    if pm == "pnpm":
+        assert (out / "pnpm-workspace.yaml").exists(), "Missing pnpm-workspace.yaml"
+        assert not (out / ".yarnrc.yml").exists(), ".yarnrc.yml should be absent for pnpm"
+    elif pm == "yarn":
+        assert (out / ".yarnrc.yml").exists(), "Missing .yarnrc.yml for yarn"
+        assert not (out / "pnpm-workspace.yaml").exists(), "pnpm-workspace.yaml should be absent for yarn"
+    else:
+        assert not (out / "pnpm-workspace.yaml").exists(), "pnpm-workspace.yaml should be absent"
+        assert not (out / ".yarnrc.yml").exists(), ".yarnrc.yml should be absent"
+
+    framework = data.get("typescript_framework", "none")
+    if framework != "none":
+        assert (out / "typescript/apps/web/package.json").exists(), "Missing typescript/apps/web/package.json"
+        assert (out / "typescript/apps/web/tsconfig.json").exists(), "Missing typescript/apps/web/tsconfig.json"
+        assert (out / "typescript/apps/web/src/index.ts").exists(), "Missing typescript/apps/web/src/index.ts"
+        runner = data.get("typescript_test_runner", "vitest")
+        if runner == "vitest":
+            assert (out / "typescript/apps/web/vitest.config.ts").exists(), "Missing vitest.config.ts"
+            assert not (out / "typescript/apps/web/jest.config.js").exists(), "jest.config.js should be absent"
+        else:
+            assert (out / "typescript/apps/web/jest.config.js").exists(), "Missing jest.config.js"
+            assert not (out / "typescript/apps/web/vitest.config.ts").exists(), "vitest.config.ts should be absent"
 
 
 def assert_java_module(out: Path) -> None:
@@ -240,7 +273,7 @@ def test_typescript_only(generate) -> None:
     out = generate("test-ts", TYPESCRIPT_ONLY)
 
     assert_core_files(out, TYPESCRIPT_ONLY)
-    assert_typescript_module(out)
+    assert_typescript_module(out, TYPESCRIPT_ONLY)
     assert_no_jinja_artifacts(out)
 
     assert not (out / "python").exists(), "python/ should be absent"
@@ -263,6 +296,6 @@ def test_polyglot(generate) -> None:
 
     assert_core_files(out, POLYGLOT)
     assert_python_module(out, "test_polyglot_py")
-    assert_typescript_module(out)
+    assert_typescript_module(out, POLYGLOT)
     assert_java_module(out)
     assert_no_jinja_artifacts(out)

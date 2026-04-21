@@ -2,12 +2,16 @@
   "name": "@{{ repo_slug }}/web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "tsc --noEmit",
-    "dev": "echo 'TODO: configure dev server'",
-    "lint": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0"
+    "build":     "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+{% if typescript_test_runner == "vitest" %}
+    "test":      "vitest run",
+{% else %}
+    "test":      "jest",
+{% endif %}
+    "lint":      "eslint src/",
+    "format":    "prettier --check src/"
   }
 }

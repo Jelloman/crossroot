@@ -39,9 +39,9 @@ uv sync
 {% if include_typescript %}
 
 # ── TypeScript ────────────────────────────────────────────────────────────────
-if [[ -d typescript ]]; then
+if [[ -f package.json ]]; then
     info "Installing TypeScript dependencies ({{ typescript_package_manager }} install)..."
-    cd typescript && {{ typescript_package_manager }} install && cd ..
+    {{ typescript_package_manager }} install
 fi
 {% endif %}
 {% if include_java and java_build_tool == "gradle" %}

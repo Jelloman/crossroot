@@ -1,0 +1,7 @@
+import { createDefaultPreset } from "ts-jest";
+
+export default {
+  ...createDefaultPreset(),
+  testEnvironment: "node",
+  testMatch: ["**/src/**/*.test.ts"],
+};
