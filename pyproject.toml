@@ -1,0 +1,16 @@
+[project]
+name = "crossroot"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(levelname)-8s %(name)s: %(message)s"

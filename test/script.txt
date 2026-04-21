@@ -5,9 +5,9 @@
 🎤 Short project description.
    A crossroot-powered multi-language repository. TEST
 🎤 Primary owner or organization name.
-   Jelloman
+   octocat
 🎤 GitHub user or organization.
-   Jelloman
+   octocat
 🎤 License for the repository.
    MIT
 🎤 Include the Python module and Python control-plane defaults?
