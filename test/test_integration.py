@@ -16,7 +16,15 @@ import sys
 from pathlib import Path
 
 from conftest import BASH
-from test_generate import JAVA_ONLY, POLYGLOT, PYTHON_ONLY, TYPESCRIPT_ONLY
+from test_generate import (
+    JAVA_ONLY,
+    POLYGLOT,
+    PYTHON_ONLY,
+    TYPESCRIPT_BUN,
+    TYPESCRIPT_NPM,
+    TYPESCRIPT_ONLY,
+    TYPESCRIPT_YARN,
+)
 
 log = logging.getLogger(__name__)
 
@@ -75,6 +83,27 @@ def test_typescript_only_runs(generate) -> None:
     _bootstrap(out)
     _nox_check(out)
     _ts_check(out, TYPESCRIPT_ONLY["typescript_package_manager"])
+
+
+def test_typescript_npm_runs(generate) -> None:
+    out = generate("run-ts-npm", TYPESCRIPT_NPM)
+    _bootstrap(out)
+    _nox_check(out)
+    _ts_check(out, "npm")
+
+
+def test_typescript_yarn_runs(generate) -> None:
+    out = generate("run-ts-yarn", TYPESCRIPT_YARN)
+    _bootstrap(out)
+    _nox_check(out)
+    _ts_check(out, "yarn")
+
+
+def test_typescript_bun_runs(generate) -> None:
+    out = generate("run-ts-bun", TYPESCRIPT_BUN)
+    _bootstrap(out)
+    _nox_check(out)
+    _ts_check(out, "bun")
 
 
 def test_java_only_runs(generate) -> None:
