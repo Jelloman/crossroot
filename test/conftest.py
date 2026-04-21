@@ -8,6 +8,26 @@ import pytest
 
 log = logging.getLogger(__name__)
 
+
+def _find_git_bash() -> str:
+    """Return the path to Git Bash on Windows, falling back to 'bash'.
+
+    git.exe may live at <root>/cmd/git.exe or <root>/mingw64/bin/git.exe,
+    so we walk up three levels looking for usr/bin/bash.exe.
+    """
+    import shutil as _shutil
+    git = _shutil.which("git")
+    if git:
+        p = Path(git).resolve()
+        for ancestor in [p.parent, p.parent.parent, p.parent.parent.parent]:
+            candidate = ancestor / "usr" / "bin" / "bash.exe"
+            if candidate.exists():
+                return str(candidate)
+    return "bash"
+
+
+BASH = _find_git_bash()
+
 TEMPLATE_ROOT = Path(__file__).parent.parent
 OUT_DIR = Path(__file__).parent / "out"
 
@@ -27,7 +47,7 @@ def generate(clean_out):
     def _generate(name: str, data: dict[str, str]) -> Path:
         dest = OUT_DIR / name
         log.info("Generating '%s' → %s", name, dest)
-        args = ["copier", "copy", "--trust", "--defaults", "--overwrite"]
+        args = ["copier", "copy", "--trust", "--defaults", "--overwrite", "--vcs-ref", "HEAD"]
         for key, value in data.items():
             args += ["--data", f"{key}={value}"]
         args += [str(TEMPLATE_ROOT), str(dest)]

@@ -71,7 +71,8 @@ def write_cursor_rules() -> None:
             f"---\n\n"
         )
         out = rules_dir / rule_file
-        out.write_text(front_matter + src.read_text(encoding="utf-8").strip() + "\n", encoding="utf-8")
+        content = front_matter + src.read_text(encoding="utf-8").strip() + "\n"
+        out.write_text(content, encoding="utf-8")
         print(f"  wrote {out.relative_to(REPO_ROOT)}")
 
 

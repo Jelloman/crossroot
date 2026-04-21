@@ -27,6 +27,7 @@ _tasks:
   - "{% if include_doctor_script %}chmod +x scripts/doctor.sh{% endif %}"
   - "{% if include_update_script %}chmod +x scripts/update-template.sh{% endif %}"
   - "{% if include_agent_docs %}chmod +x scripts/gen-agent-docs.sh{% endif %}"
+  - "uvx ruff format noxfile.py tools/render_agent_docs.py --quiet"
 
 _message_after_copy: |
   crossroot repo created.
@@ -117,13 +118,13 @@ python_default_app_name:
 include_basedpyright:
   type: bool
   help: Enable BasedPyright config by default?
-  default: true
+  default: "{{ include_python }}"
   when: "{{ include_python }}"
 
 include_pytest:
   type: bool
   help: Include pytest configuration?
-  default: true
+  default: "{{ include_python }}"
   when: "{{ include_python }}"
 
 typescript_package_manager:
