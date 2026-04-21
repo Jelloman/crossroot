@@ -187,14 +187,6 @@ include_update_script:
   help: Include a template update wrapper script?
   default: true
 
-root_layout_style:
-  type: str
-  help: Root layout style.
-  choices:
-    - minimal-control-plane
-    - expanded-control-plane
-  default: minimal-control-plane
-
 create_example_apps:
   type: bool
   help: Generate sample language subprojects for included modules?

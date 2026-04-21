@@ -36,7 +36,6 @@ PYTHON_ONLY: dict[str, str] = {
     "include_github_actions": "true",
     "include_doctor_script": "true",
     "include_update_script": "true",
-    "root_layout_style": "expanded-control-plane",
     "create_example_apps": "true",
 }
 
@@ -56,7 +55,6 @@ TYPESCRIPT_ONLY: dict[str, str] = {
     "include_github_actions": "true",
     "include_doctor_script": "true",
     "include_update_script": "true",
-    "root_layout_style": "minimal-control-plane",
     "create_example_apps": "false",
 }
 
@@ -76,7 +74,6 @@ JAVA_ONLY: dict[str, str] = {
     "include_github_actions": "true",
     "include_doctor_script": "true",
     "include_update_script": "true",
-    "root_layout_style": "minimal-control-plane",
     "create_example_apps": "false",
 }
 
@@ -103,7 +100,6 @@ POLYGLOT: dict[str, str] = {
     "include_github_actions": "true",
     "include_doctor_script": "true",
     "include_update_script": "true",
-    "root_layout_style": "minimal-control-plane",
     "create_example_apps": "false",
 }
 
