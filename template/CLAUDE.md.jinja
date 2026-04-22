@@ -5,7 +5,11 @@
 ---
 
 {% include 'template/docs/agent-src/coding-standards.md.jinja' %}
+{% if include_python %}
+---
 
+{% include 'template/docs/agent-src/python.md.jinja' %}
+{% endif %}
 ---
 
 {% include 'template/docs/agent-src/workflows.md.jinja' %}
@@ -13,3 +17,7 @@
 ---
 
 {% include 'template/docs/agent-src/platform-rules.md.jinja' %}
+
+---
+
+{% include 'template/docs/agent-src/scripting.md.jinja' %}

@@ -1,0 +1,64 @@
+# crossroot Scripting Standards
+
+Standards for bash and repo scripting: shared shell scripts, CI entrypoints, and developer-facing wrappers.
+
+## Goal
+
+Write small, reliable shell scripts that work on Windows via Git Bash, macOS, and Linux. Keep shell concerns separate from Python, and avoid turning bash into a general-purpose programming layer.
+
+## Supported shell model
+
+- Use bash as the baseline shell.
+- Windows users run scripts in Git Bash.
+- macOS and Linux users run scripts in native bash.
+- Do not rely on PowerShell, CMD, zsh-specific behavior, or Linux-only shell quirks.
+
+## Script style
+
+- Prefer short, single-purpose scripts.
+- Start with `#!/usr/bin/env bash`.
+- Use strict mode where practical: `set -euo pipefail`.
+- Quote variable expansions.
+- Prefer `printf` over `echo` for predictable output.
+- Check prerequisites explicitly and fail with a clear message.
+
+## Portability rules
+
+- Avoid GNU-only flags unless the repo standardizes on them.
+- Avoid assumptions about case sensitivity, symlinks, or path separators.
+- Keep path handling simple and explicit.
+- Treat spaces in paths as normal, not exceptional.
+- Prefer repo-relative paths over hardcoded absolute paths.
+
+## Root scripts
+
+Root-level scripts in `scripts/` are the shared entrypoints for common repo tasks:
+
+- `bootstrap.sh` — environment setup
+- `check.sh` — full validation
+{% if include_doctor_script %}- `doctor.sh` — environment diagnostics
+{% endif %}{% if include_update_script %}- `update-template.sh` — apply upstream template changes
+{% endif %}{% if include_agent_docs %}- `gen-agent-docs.sh` — regenerate agent docs
+{% endif %}- `croot` — dispatcher that routes to the scripts above
+
+These are stable wrappers that run the same way on every platform.
+
+## Good patterns
+
+- Wrapper scripts that dispatch to language-native tools.
+- Small orchestration scripts in `scripts/`.
+- Clear error messages when a tool is missing.
+- CI using the same scripts developers run locally.
+- ShellCheck on all committed bash scripts.
+
+## Avoid
+
+- Large bash programs with complex parsing.
+- Unquoted variables.
+- Ad hoc shell logic duplicated across CI and local scripts.
+- Platform-specific branches unless absolutely necessary.
+- Using bash for data processing, JSON handling, or other tasks better suited to another language.
+
+## Rule of thumb
+
+If a script is getting clever, it is probably the wrong place for the logic. Use bash for thin, portable wrappers. Keep scripts small, explicit, and Git Bash friendly. Put real complexity elsewhere.
