@@ -7,6 +7,9 @@ authors = [{ name = "{{ owner_name }}" }]
 requires-python = ">={{ python_version }}"
 
 {% if include_python and python_mode == "workspace" %}
+[tool.uv]
+package = false
+
 [tool.uv.workspace]
 members = [
     "python/apps/*",

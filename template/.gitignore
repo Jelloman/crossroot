@@ -1,0 +1,28 @@
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/*.pyo
+.venv/
+**/*.egg-info/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+**/.basedpyright/
+
+# Node / TypeScript
+**/node_modules/
+**/*.tsbuildinfo
+**/.next/
+
+# Java
+**/.gradle/
+**/build/
+**/*.class
+**/*.jar
+**/out/
+
+# General
+dist/
+.env
+.DS_Store
+Thumbs.db

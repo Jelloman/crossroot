@@ -21,7 +21,8 @@ It is designed for repos that want:
 uv tool install copier
 
 # Generate a new repo from crossroot
-copier copy gh:Jelloman/crossroot path/to/new-repo
+# "--trust" is needed to chmod the scripts.
+copier copy --trust gh:Jelloman/crossroot path/to/new-repo
 
 # Bootstrap and validate
 cd path/to/new-repo

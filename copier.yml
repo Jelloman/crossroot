@@ -151,15 +151,6 @@ typescript_version:
   default: "5"
   when: "{{ include_typescript }}"
 
-eslint_version:
-  type: str
-  help: ESLint major version.
-  choices:
-    - "10"
-    - "9"
-  default: "9"
-  when: "{{ include_typescript }}"
-
 typescript_test_runner:
   type: str
   help: TypeScript test runner.
