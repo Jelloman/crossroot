@@ -30,6 +30,7 @@ _exclude:
   - "{% if not include_agent_docs %}scripts/gen-agent-docs.sh{% endif %}"
   - "{% if not include_agent_docs %}tools{% endif %}"
   - "{% if not include_agent_docs %}docs/agent-src{% endif %}"
+  - "{% if include_agent_docs and not include_python %}docs/agent-src/python.md{% endif %}"
   - "{% if not include_github_actions %}.github{% endif %}"
 
 _tasks:

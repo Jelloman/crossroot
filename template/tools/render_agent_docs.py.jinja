@@ -8,8 +8,10 @@ AGENT_SRC = REPO_ROOT / "docs" / "agent-src"
 SECTIONS = [
     "overview.md",
     "coding-standards.md",
-    "workflows.md",
+{% if include_python %}    "python.md",
+{% endif %}    "workflows.md",
     "platform-rules.md",
+    "scripting.md",
 ]
 
 _GENERATED_HEADER = (

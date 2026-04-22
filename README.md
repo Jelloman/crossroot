@@ -14,6 +14,35 @@ It is designed for repos that want:
 - A reusable Python control layer built on `uv`, `nox`, `ruff`, `basedpyright`, `pytest`, and `Copier`.
 - A single source of truth for `CLAUDE.md`, `AGENTS.md`, and editor/agent rules.
 
+## Quick Start
+
+```bash
+# Install Copier (once)
+uv tool install copier
+
+# Generate a new repo from crossroot
+copier copy gh:Jelloman/crossroot path/to/new-repo
+
+# Bootstrap and validate
+cd path/to/new-repo
+bash scripts/bootstrap.sh   # installs deps; then add scripts/ to your PATH
+croot check                 # runs lint, typecheck, and tests
+```
+
+## Instructions
+
+Generated repos ship with a `scripts/` directory. The `croot` dispatcher is the
+primary entry point; the rest are invoked either through `croot` or directly.
+
+| Script | Purpose |
+|--------|---------|
+| `croot` | Dispatcher that finds the repo root (via `.copier-answers.yml`) and forwards to the scripts below. Run `croot <command>` from anywhere in the repo. |
+| `bootstrap.sh` | Verifies required tools (git, uv, and any language-module tools), runs `uv sync`, installs TypeScript/Java deps if enabled, and advises on adding `scripts/` to your `PATH`. |
+| `check.sh` | Runs the `check` Nox session (`uv run nox -s check`) — lint, format check, typecheck, and tests across enabled language modules. |
+| `doctor.sh` | Diagnoses the local environment: prints OS, shell, detected tool versions, and the presence of key repo files. Use when something seems off. |
+| `gen-agent-docs.sh` | Regenerates `CLAUDE.md`, `AGENTS.md`, and `.cursor/rules/` from the canonical sources in `docs/agent-src/`. Run after editing agent docs. |
+| `update-template.sh` | Applies upstream crossroot template changes to the repo via `copier update --trust`. Review the diff carefully before committing. |
+
 ## Why crossroot
 
 I've started multiple Python projects recently and find myself repeating a lot of setup and tooling.

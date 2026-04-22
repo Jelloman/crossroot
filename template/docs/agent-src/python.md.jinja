@@ -1,0 +1,105 @@
+# Python Agent Instructions
+
+Agent-facing best practices for Python work in this repository. The toolchain is `uv`, `nox`, `ruff`{% if include_pytest %}, `pytest`{% endif %}{% if include_basedpyright %}, and `basedpyright`{% endif %}, with root-level execution.
+
+## Mission
+
+Treat the repository root as the Python control plane. Prefer root-level commands, preserve workspace consistency, and avoid ad hoc tool invocation that bypasses standard entry points.
+
+## Default behavior
+
+- Prefer `uv run ...` for direct Python command execution — `uv run` locks and syncs before invocation.
+- Prefer `uv run nox -s <session>` for standardized workflows such as `test`, `lint`, `typecheck`, and `check`.
+{% if python_mode == "workspace" %}- The root environment and lockfile are authoritative unless a task explicitly targets a member package.
+- For package-specific tasks, use `uv run --package <member> ...` from the root rather than changing conventions per subdirectory.
+{% endif %}
+
+## uv practices
+
+- `uv` is the source of truth for Python dependency management, locking, syncing, and command execution.
+- Do not tell users to activate virtual environments unless the task explicitly requires it; default to `uv run` workflows.
+{% if python_mode == "workspace" %}- `uv lock` operates across the workspace; `uv run` and `uv sync` target the workspace root by default.
+- Assume editable installs for workspace members during sync unless a task explicitly needs `--no-editable`.
+{% endif %}- Avoid introducing parallel dependency files or one-off install instructions that diverge from the root `pyproject.toml` and `uv.lock`.
+
+## nox practices
+
+- `nox` is the canonical automation layer for repeatable Python workflows.
+- Define workflows as named sessions in `noxfile.py`; route repo-standard tasks through those sessions.
+- Prefer a small, stable set of sessions such as `lint`, `format`, `typecheck`, `test`, `check`{% if include_agent_docs %}, `gen-agent-docs`{% endif %}.
+- Keep complex logic inside the nox session (or reusable Python helpers) instead of shell-heavy orchestration.
+- Prefer `uv run nox -s check` over hand-written command sequences when validating changes.
+
+## ruff practices
+
+- `ruff` is the default linter and formatter.
+- Keep linting and formatting policy in one `ruff` configuration; do not invent alternate formatting tools or local style rules.
+- Avoid enabling lint rules that conflict with the `ruff` formatter.
+- Prefer repo commands such as `uv run ruff check .` and `uv run ruff format .` or their nox wrappers.
+{% if include_pytest %}
+
+## pytest practices
+
+- Use `pytest` for tests and keep it integrated through the normal dependency and automation flow.
+- Prefer the `src/` layout for import clarity and modern `pyproject.toml`-based configuration.
+- Prefer `pytest`'s `importlib` import mode over legacy path-munging defaults.
+- Do not use deprecated entry points such as `python setup.py test` or `pytest-runner`.
+- Run tests through root workflows first: `uv run pytest`, `uv run nox -s test`, or wrapper scripts that call them.
+{% endif %}
+{% if include_basedpyright %}
+
+## basedpyright practices
+
+- `basedpyright` is the default static type checker; treat strict typing as a normal part of development, not an optional extra.
+- Configure `basedpyright` in `[tool.basedpyright]` in `pyproject.toml` or in `pyrightconfig.json`. Do not duplicate conflicting config across both without a clear hierarchy.
+- If both config forms exist, `pyrightconfig.json` takes precedence.
+- Use execution-environment or subdirectory-specific config when different packages need different search paths, versions, or platform targets.
+- `uv` workspace changes can require editor language-server refreshes — do not assume editor state always reflects the newest workspace configuration instantly.
+{% endif %}
+
+## Root-level command policy
+
+Prefer these patterns:
+
+- `uv run <tool>` for direct tool execution.
+{% if python_mode == "workspace" %}- `uv run --package <member> <tool>` for workspace-member-specific execution.
+{% endif %}- `uv run nox -s <session>` for standardized workflows.
+- Repository wrapper scripts when they exist — especially `scripts/check.sh`{% if include_doctor_script %} and `scripts/doctor.sh`{% endif %}.
+
+Avoid these unless explicitly required:
+
+- Manual venv activation as the primary instruction path.
+- Ad hoc `pip install ...` commands that bypass the locked workflow.
+- Running tests or tools from arbitrary subdirectories when the repo defines root-level execution conventions.
+{% if python_mode == "workspace" %}
+
+## Workspace behavior
+
+- The workspace root is authoritative for shared Python tooling, lock state, and validation.
+- Use package-targeted commands rather than introducing per-package local workflows that duplicate root behavior.
+- Keep Python as a clean island inside the monorepo; avoid reaching into{% if include_typescript %} TypeScript,{% endif %}{% if include_java %} Java,{% endif %} or other language tooling unless the task specifically requires it.
+{% endif %}
+
+## Agent operating rules
+
+- Read the root documentation and tool config before making changes.
+- Prefer existing sessions, scripts, and config over inventing new commands.
+- Preserve the lockfile workflow; do not casually regenerate or rewrite dependency state without cause.
+- Keep changes small, type-safe, and testable.
+- Before finishing a task, run the standard validation command — `croot check` or `uv run nox -s check`.
+
+## Default command map
+
+| Intent | Preferred command |
+|---|---|
+| Run a Python CLI | `uv run python -m <module>` or `uv run <entrypoint>` |
+{% if python_mode == "workspace" %}| Run a workspace-member command | `uv run --package <member> <command>` |
+{% endif %}| Lint | `uv run ruff check .` or `uv run nox -s lint` |
+| Format | `uv run ruff format .` or `uv run nox -s format` |
+{% if include_basedpyright %}| Type check | `uv run basedpyright` or `uv run nox -s typecheck` |
+{% endif %}{% if include_pytest %}| Test | `uv run pytest` or `uv run nox -s test` |
+{% endif %}| Full validation | `croot check` or `uv run nox -s check` |
+
+## Summary
+
+Use `uv` for execution and dependency workflow, `nox` for standardized automation, `ruff` for lint and format{% if include_pytest %}, `pytest` for tests{% endif %}{% if include_basedpyright %}, and `basedpyright` for strict typing{% endif %}. Stay at the repo root by default, respect workspace boundaries, prefer existing scripts and sessions, and finish by running the standard validation workflow.
