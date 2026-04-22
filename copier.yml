@@ -76,15 +76,6 @@ github_owner:
   help: GitHub user or organization.
   default: ""
 
-license_name:
-  type: str
-  help: License for the repository.
-  choices:
-    - MIT
-    - Apache-2.0
-    - Proprietary
-  default: MIT
-
 include_python:
   type: bool
   help: Include the Python module and Python control-plane defaults?
