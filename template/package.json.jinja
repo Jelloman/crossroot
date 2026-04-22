@@ -14,8 +14,8 @@
     "build":     "pnpm --recursive run build",
     "test":      "pnpm --recursive run test",
 {% elif typescript_package_manager == "yarn" %}
-    "build":     "yarn workspaces foreach --all run build",
-    "test":      "yarn workspaces foreach --all run test",
+    "build":     "yarn workspaces run build",
+    "test":      "yarn workspaces run test",
 {% elif typescript_package_manager == "npm" %}
     "build":     "npm --workspaces --if-present run build",
     "test":      "npm --workspaces --if-present run test",
