@@ -1,5 +1,7 @@
 import logging
+import os
 import shutil
+import stat
 import subprocess
 import time
 from pathlib import Path
@@ -32,20 +34,33 @@ TEMPLATE_ROOT = Path(__file__).parent.parent
 OUT_DIR = Path(__file__).parent / "out"
 
 
+def _force_rmtree(path: Path) -> None:
+    """Remove a directory tree, clearing read-only bits on Windows before each delete."""
+    def _on_error(func, p, _exc):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+            func(p)
+        except OSError:
+            pass
+    shutil.rmtree(path, onerror=_on_error)
+
+
 @pytest.fixture(autouse=True, scope="session")
 def clean_out():
     log.info("Cleaning output directory: %s", OUT_DIR)
-    shutil.rmtree(OUT_DIR, ignore_errors=True)
+    _force_rmtree(OUT_DIR)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     yield
     log.info("Removing output directory: %s", OUT_DIR)
-    shutil.rmtree(OUT_DIR, ignore_errors=True)
+    _force_rmtree(OUT_DIR)
 
 
 @pytest.fixture(scope="session")
 def generate(clean_out):
     def _generate(name: str, data: dict[str, str]) -> Path:
         dest = OUT_DIR / name
+        if dest.exists():
+            _force_rmtree(dest)
         log.info("Generating '%s' → %s", name, dest)
         args = ["copier", "copy", "--trust", "--defaults", "--overwrite", "--vcs-ref", "HEAD"]
         for key, value in data.items():

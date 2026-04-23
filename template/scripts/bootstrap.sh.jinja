@@ -47,7 +47,7 @@ fi
 {% if include_java and java_build_tool == "gradle" %}
 
 # ── Java / Gradle ─────────────────────────────────────────────────────────────
-if [[ -f java/gradlew ]]; then
+if [[ -f java/gradlew && -f java/gradle/wrapper/gradle-wrapper.jar ]]; then
     info "Checking Gradle wrapper..."
     java/gradlew --version --quiet
 fi

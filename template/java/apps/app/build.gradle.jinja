@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+{% if java_project_kind == "application" %}
+    id 'application'
+{% endif %}
+}
+
+group = '{{ github_owner | lower }}.{{ repo_slug | replace('-', '.') }}'
+version = '0.1.0'
+
+{% if java_project_kind == "application" %}
+application {
+    mainClass = 'App'
+}
+{% endif %}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of({{ java_version }})
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}

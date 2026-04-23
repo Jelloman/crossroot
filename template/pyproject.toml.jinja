@@ -1,3 +1,4 @@
+{% if not (include_python and python_mode == "workspace") %}
 [project]
 name = "{{ repo_slug }}"
 version = "0.1.0"
@@ -5,8 +6,7 @@ description = "{{ project_description }}"
 readme = "README.md"
 authors = [{ name = "{{ owner_name }}" }]
 requires-python = ">={{ python_version }}"
-
-{% if include_python and python_mode == "workspace" %}
+{% else %}
 [tool.uv]
 package = false
 
