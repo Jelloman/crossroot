@@ -1,5 +1,5 @@
-"""Placeholder test — delete once real tests exist."""
+from {{ python_default_app_name }} import greet
 
 
-def test_placeholder() -> None:
-    assert True
+def test_greet() -> None:
+    assert greet("world") == "Hello, world!"

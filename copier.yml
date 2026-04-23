@@ -32,6 +32,13 @@ _exclude:
   - "{% if not include_agent_docs %}docs/agent-src{% endif %}"
   - "{% if include_agent_docs and not include_python %}docs/agent-src/python.md{% endif %}"
   - "{% if not include_github_actions %}.github{% endif %}"
+  # Gradle DSL variants — only copy the selected language
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/build.gradle.jinja{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/settings.gradle.jinja{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/apps/app/build.gradle.jinja{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/build.gradle.kts.jinja{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/settings.gradle.kts.jinja{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/apps/app/build.gradle.kts.jinja{% endif %}"
 
 _tasks:
   - "chmod +x scripts/croot"
@@ -151,15 +158,6 @@ typescript_version:
   default: "5"
   when: "{{ include_typescript }}"
 
-eslint_version:
-  type: str
-  help: ESLint major version.
-  choices:
-    - "10"
-    - "9"
-  default: "9"
-  when: "{{ include_typescript }}"
-
 typescript_test_runner:
   type: str
   help: TypeScript test runner.
@@ -198,6 +196,27 @@ java_project_kind:
     - application
   default: application
   when: "{{ include_java }}"
+
+java_version:
+  type: int
+  help: Java version.
+  choices:
+    - 17
+    - 21
+    - 24
+    - 25
+    - 26
+  default: 21
+  when: "{{ include_java }}"
+
+gradle_script_language:
+  type: str
+  help: Gradle build script language.
+  choices:
+    - kotlin
+    - groovy
+  default: kotlin
+  when: "{{ include_java and java_build_tool == 'gradle' }}"
 
 include_agent_docs:
   type: bool
