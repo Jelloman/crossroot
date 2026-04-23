@@ -42,8 +42,10 @@
     "@types/jest":       "^30.0.0",
     "ts-jest":           "^29.0.0"
 {% endif %}
-  }{% if typescript_package_manager == "pnpm" %},
+  }{{ "," if typescript_package_manager == "pnpm" else "" }}
+{% if typescript_package_manager == "pnpm" %}
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild"]
-  }{% endif %}
+  }
+{% endif %}
 }

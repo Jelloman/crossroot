@@ -30,7 +30,7 @@ jobs:
 {% if include_typescript %}
 
       - name: Set up Node / {{ typescript_package_manager }}
-        uses: {% if typescript_package_manager == "pnpm" %}pnpm/action-setup@v4{% elif typescript_package_manager == "bun" %}oven-sh/setup-bun@v2{% else %}actions/setup-node@v4{% endif %}
+        uses: {{ {"pnpm": "pnpm/action-setup@v4", "bun": "oven-sh/setup-bun@v2"}.get(typescript_package_manager, "actions/setup-node@v4") }}
 
       - name: Install TypeScript dependencies
         working-directory: typescript
