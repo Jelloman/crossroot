@@ -9,7 +9,7 @@ crossroot targets Windows (Git Bash), macOS, and Linux equally.
 - **Git for Windows** (includes Git Bash): https://git-scm.com/downloads
 - **uv**: `winget install astral-sh.uv` or `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
 {% if include_typescript %}
-- **{{ typescript_package_manager }}**: see https://{% if typescript_package_manager == "pnpm" %}pnpm.io/installation{% elif typescript_package_manager == "bun" %}bun.sh{% else %}nodejs.org{% endif %}
+- **{{ typescript_package_manager }}**: see https://{{ {"pnpm": "pnpm.io/installation", "bun": "bun.sh"}.get(typescript_package_manager, "nodejs.org") }}
 {% endif %}
 {% if include_java %}
 - **JDK 21+**: https://adoptium.net/
