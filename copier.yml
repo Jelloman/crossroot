@@ -2,6 +2,13 @@ _templates_suffix: .jinja
 
 _subdirectory: template
 
+# Strip whitespace produced by block tags ({% if %}, {% for %}, ...) so that
+# conditional sections don't leave stray blank lines or indentation artifacts
+# in rendered files.
+_envops:
+  trim_blocks: true
+  lstrip_blocks: true
+
 _exclude:
   # Language module directories — only copy what's enabled
   - "{% if not include_python or python_mode == 'none' %}python{% endif %}"
@@ -32,13 +39,14 @@ _exclude:
   - "{% if not include_agent_docs %}docs/agent-src{% endif %}"
   - "{% if include_agent_docs and not include_python %}docs/agent-src/python.md{% endif %}"
   - "{% if not include_github_actions %}.github{% endif %}"
-  # Gradle DSL variants — only copy the selected language
-  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/build.gradle.jinja{% endif %}"
-  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/settings.gradle.jinja{% endif %}"
-  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/apps/app/build.gradle.jinja{% endif %}"
-  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/build.gradle.kts.jinja{% endif %}"
-  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/settings.gradle.kts.jinja{% endif %}"
-  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/apps/app/build.gradle.kts.jinja{% endif %}"
+  # Gradle DSL variants — only copy the selected language. _exclude matches
+  # against rendered destination paths, so these must NOT carry the .jinja suffix.
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/build.gradle{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/settings.gradle{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'groovy') %}java/apps/app/build.gradle{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/build.gradle.kts{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/settings.gradle.kts{% endif %}"
+  - "{% if not (include_java and java_build_tool == 'gradle' and gradle_script_language == 'kotlin') %}java/apps/app/build.gradle.kts{% endif %}"
 
 _tasks:
   - "chmod +x scripts/croot"
@@ -57,7 +65,9 @@ _message_after_copy: |
     2. Run ./scripts/bootstrap.sh  (then add scripts/ to your PATH)
     3. Run: croot check
     4. Review docs/platforms.md
-    {% if include_agent_docs %}5. Run: croot gen-docs  (to regenerate agent docs after customizing docs/agent-src/){% endif %}
+  {% if include_agent_docs %}
+    5. Run: croot gen-docs  (to regenerate agent docs after customizing docs/agent-src/)
+  {% endif %}
 
 project_name:
   type: str

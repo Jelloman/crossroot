@@ -19,4 +19,14 @@ cat <<'MSG'
 
 MSG
 
-uvx copier update --trust --defaults
+# If the template was generated from a local directory (i.e. this repo is
+# exercising an in-development crossroot checkout), update against that
+# checkout's HEAD rather than its latest tag — otherwise copier would revert
+# to the most recent tagged release and ignore unreleased local changes.
+src_path="$(grep -oE "_src_path:[[:space:]]*'?[^,'}]+" .copier-answers.yml | sed -E "s/_src_path:[[:space:]]*'?//" | head -1)"
+vcs_ref_args=()
+if [ -n "$src_path" ] && [ -d "$src_path" ]; then
+  vcs_ref_args=(--vcs-ref=HEAD)
+fi
+
+uvx copier update --trust --defaults "${vcs_ref_args[@]}"
